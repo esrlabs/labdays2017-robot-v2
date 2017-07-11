@@ -1,0 +1,1 @@
+You need to place the libraries from the opencv(3.2 android) sdk here. That is everything from the sdk/native/libs folder.
