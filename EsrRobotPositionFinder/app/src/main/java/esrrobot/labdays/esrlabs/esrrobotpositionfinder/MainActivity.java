@@ -4,16 +4,16 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.vision.barcode.BarcodeDetector;
-
-import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.opencv.android.OpenCVLoader;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = "EsrRobotPositionFinder";
+    private MQTTConnection mqtt;
 
     // Used to load the 'native-lib' library on application startup.
     static {
@@ -35,8 +35,18 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        BarcodeDetector barcodeDetector;
-        MqttClient mqttClient;
+        try {
+            mqtt = new MQTTConnection(this);
+        } catch (MqttException e) {
+            Log.e(LOG_TAG, "cannot create MQTT connection",e);
+        }
+
+        mqtt.connect(new IMqttMessageListener() {
+            @Override
+            public void messageArrived(String topic, MqttMessage message) throws Exception {
+                Log.d(LOG_TAG, "message arrived 2.0:" + message);
+            }
+        });
 
         // Example of a call to a native method
         TextView tv = (TextView) findViewById(R.id.sample_text);
