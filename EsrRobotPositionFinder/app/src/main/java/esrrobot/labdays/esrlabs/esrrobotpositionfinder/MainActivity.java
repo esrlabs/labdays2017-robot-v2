@@ -129,21 +129,72 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         Mat mat = inputFrame.rgba();
+        long start = System.currentTimeMillis();
         Bitmap bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(mat, bitmap);
         Frame frame = new Frame.Builder().setBitmap(bitmap).build();
         SparseArray<Barcode> barcodes = mBarcodeDetector.detect(frame);
 
-        Log.d(TAG, "Found " + barcodes.size() + " codes");
-        for (int i = 0; i < barcodes.size(); ++i) {
-            final Barcode code = barcodes.valueAt(i);
-            Log.d(TAG, "Code: " + code.rawValue);
-            for (int j = 0; j < 4; ++j) {
-                drawLine(mat, code.cornerPoints, j, (j + 1) % 4, new Scalar(255, 0, 0));
-            }
+        final Barcode code = findBarcode(barcodes, mat.cols(), mat.rows());
+        if (code == null) {
+            return mat;
+        }
+        Log.d(TAG, "Code: " + code.rawValue);
+        for (int j = 0; j < 4; ++j) {
+            drawLine(mat, code.cornerPoints, j, (j + 1) % 4, new Scalar(255, 0, 0));
+        }
+        publish(code, start);
+        return mat;
+    }
+
+    private void publish(Barcode code, long startTime) {
+        long stopTime = System.currentTimeMillis();
+        String message = "PHONE_1:" + formatTimestamp(startTime) + ":" + formatTimestamp(stopTime)
+                + ":QR_1:" + code.rawValue;
+        try {
+            mqtt.publishMessage(message);
+        } catch (Exception e) {
+            Log.e(TAG, "Cannot send message:" + message, e);
         }
 
-        return mat;
+    }
+
+    private String formatTimestamp(long time) {
+        String fraction = Long.toString(time % 1000);
+        while (fraction.length() < 3) {
+            fraction = "0" + fraction;
+        }
+        return time / 1000 + "." + fraction;
+    }
+
+    private Barcode findBarcode(SparseArray<Barcode> barcodes, int xDim, int yDim) {
+        double closestDist = Double.POSITIVE_INFINITY;
+        Barcode closest = null;
+        for (int i = 0; i < barcodes.size(); ++i) {
+            Barcode current = barcodes.valueAt(i);
+            double dist = squaredDistanceFromCenter(current.cornerPoints, xDim, yDim);
+            if (dist < closestDist) {
+                closest = current;
+                closestDist = dist;
+            }
+        }
+        return closest;
+    }
+
+    private double squaredDistanceFromCenter(Point[] data, int xDim, int yDim) {
+        int x = 0;
+        int y = 0;
+        for (int i = 0; i < 4; ++i) {
+            x += data[i].x;
+            y += data[i].y;
+        }
+        x /= 4;
+        y /= 4;
+
+        int centerX = xDim / 2;
+        int centerY = yDim / 2;
+
+        return Math.pow(centerX - x, 2) + Math.pow(centerY - y, 2);
     }
 
     private void drawLine(Mat mat, Point[] points, int from, int to, Scalar color) {
