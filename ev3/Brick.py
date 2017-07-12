@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-import .io.MotorControl
-import .io.SensorArray
+import io.MotorControl as MotorControl
+import io.SensorArray as SensorArray
 
 import ev3dev.ev3 as ev3
 from time import time, sleep
