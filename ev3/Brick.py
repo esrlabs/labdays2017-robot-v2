@@ -23,7 +23,7 @@ class Brick:
         self.sensors = SensorArray('in1', 'in4', 'in2')
         self._msg_queue = queue.Queue()
         self.commserver = CommServer('brick', 'log', self.data_received)
-        self.commserver.est_conn()
+        self.commserver.est_conn('172.32.2.167', 1883, 60)
 
     def data_received(self, msg):
         command_id, command_data = msg.split(":")
