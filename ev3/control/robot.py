@@ -27,11 +27,11 @@ class Robot:
   def setSpeed(self, value):
     time1 = time()
 	
-    self.motorLeft.run_forever(speed_sp = value)
+    self.motorLeft.run_direct(duty_cycle_sp = value)
 	
     time2 = time()
 	
-    self.motorRight.run_forever(speed_sp = value)
+    self.motorRight.run_direct(duty_cycle_sp = value)
 	
     time3 = time()
 	
@@ -68,10 +68,12 @@ class Robot:
 
 def main():
     robot_ctrl = Robot()
-    robot_ctrl.setSpeed(-250)
+    robot_ctrl.setSpeed(-25)
     sleep(1)
     robot_ctrl.getSensorData()
     sleep(1)
+    robot_ctrl.setSpeed(25)
+    sleep(2)
     robot_ctrl.setSpeed(0)
 
 if __name__ == '__main__':
