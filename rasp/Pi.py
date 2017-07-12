@@ -29,6 +29,9 @@ class Pi:
         self.commserver = CommServer('#/out', 'brick/in', self.data_received)
         self.commserver.est_conn('172.32.2.167', 1883, 60)
 
+        self.webserver = CommServer('webserver/webserver', 'web/in', self.data_received)
+        self.webserver.est_conn('172.32.2.167', 1833, 60)
+
     def data_received(self, msg):
         sensordata = msg.split("\n")
 
