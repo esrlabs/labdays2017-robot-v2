@@ -167,14 +167,14 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setTitle(String.format(Locale.ENGLISH, "%s,%.4f,%.4f,%.4f",
+                    setTitle(String.format(Locale.ENGLISH, "%s,%.3f,%.3f,%.3f",
                             code.rawValue,
                             angle,
                             pos[0],
                             pos[1]));
                 }
             });
-            publish(code, angle, pos, start);
+            publish(code.rawValue, angle, pos, start);
         }
         return mat;
     }
@@ -210,7 +210,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     }
 
     private double[] calculateGlobalPos(String code, double[] offset, double angle) {
-        double[] rotated = offsetToGlobalCoords(offset, angle);
+        double[] rotated = offsetToGlobalCords(offset, angle);
         double[] pos = new double[2];
         pos[0] = Integer.parseInt(code.substring(1, 3));
         pos[1] = Integer.parseInt(code.substring(3, 5));
@@ -221,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         return pos;
     }
 
-    private double[] offsetToGlobalCoords(double[] offset, double degrees) {
+    private double[] offsetToGlobalCords(double[] offset, double degrees) {
         degrees = -degrees;
         double x = offset[0];
         double y = offset[1];
@@ -257,16 +257,20 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         return candidate;
     }
 
-    private void publish(Barcode code, double angle, double[] dirFromCenter, long startTime) {
+    private void publish(String code, double angle, double[] pos, long startTime) {
         long stopTime = System.currentTimeMillis();
         String message = "PHONE_1:" + formatTimestamp(startTime) + ":" + formatTimestamp(stopTime)
-                + ":QR_1:" + code.rawValue + "," + angle + "," + dirFromCenter[0] + "," + dirFromCenter[1];
+                + ":QR_1:" + code + "," + convertDouble(angle) + "," + convertDouble(pos[0])
+                + "," + convertDouble(pos[1]);
         try {
             mqtt.publishMessage(message);
         } catch (Exception e) {
             Log.e(TAG, "Cannot send message:" + message, e);
         }
+    }
 
+    private String convertDouble(double value) {
+        return String.format(Locale.ENGLISH, "%.3f", value);
     }
 
     private String formatTimestamp(long time) {
