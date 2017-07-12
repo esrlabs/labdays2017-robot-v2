@@ -130,9 +130,17 @@ public class ImageProcessing {
         return new org.opencv.core.Point(p.x, p.y);
     }
 
-    public void addClosestDebug(Mat rgbaImage, List<Line> closest) {
+    public void drawLines(Mat rgbaImage, List<Line> closest) {
         for (Line l : closest) {
-            Imgproc.line(rgbaImage, new org.opencv.core.Point(l.pointA[0], l.pointA[1]), new org.opencv.core.Point(l.pointB[0], l.pointB[1]), new Scalar(0, 255, 0), 2);
+            drawLine(rgbaImage, l);
         }
+    }
+
+    public void drawLine(Mat rgbaImage, Line l) {
+        drawLine(rgbaImage, l.pointA, l.pointB, new Scalar(0, 255, 0));;
+    }
+    public void drawLine(Mat rgbaImage, double[] a, double[] b, Scalar color){
+        Imgproc.line(rgbaImage, new org.opencv.core.Point(a[0], a[1]), new org.opencv.core.Point(b[0], b[1]), color, 2);
+
     }
 }

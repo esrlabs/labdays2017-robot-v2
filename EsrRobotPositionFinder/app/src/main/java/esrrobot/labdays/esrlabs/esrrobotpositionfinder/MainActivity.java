@@ -19,8 +19,11 @@ import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
@@ -151,15 +154,46 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             if (closest.isEmpty()) {
                 return mat;
             }
-            Log.d(TAG, "Closest: " + closest);
-            mImageProcessing.addClosestDebug(mat, closest);
+//            Log.d(TAG, "Closest: " + closest);
+            mImageProcessing.drawLines(mat, closest);
             Point point = getClosest(closest, code.cornerPoints);
             mImageProcessing.drawPoint(mat, point.x, point.y);
-            double angle = getAngle(center, new double[]{point.x, point.y});
-            Log.d(TAG, "Angle: " + angle);
-            publish(code, angle, start);
+            mImageProcessing.drawLine(mat, new double[]{mat.cols() / 2, mat.rows() / 2}, center, new Scalar(0, 255, 255));
+            final double angle = getAngle(center, new double[]{point.x, point.y});
+            double scale = getScale(center, new double[]{point.x, point.y});
+            final double[] fromCenter = getDirectionFromCenter(center, mat.cols(), mat.rows(), scale);
+            Log.d(TAG, "Angle: " + angle + " Scale: " + scale + " FromCenter: " + Arrays.toString(fromCenter));
+            mHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    setTitle(String.format(Locale.ENGLISH,"%s,%.4f,%.4f,%.4f",
+                            code.rawValue,
+                            angle,
+                            fromCenter[0],
+                            fromCenter[1]));
+                }
+            });
+            publish(code, angle, fromCenter, start);
         }
         return mat;
+    }
+
+    private static final double QR_DIAGONAL_DISTANCE = 1.85;
+
+    private double getScale(double[] center, double[] corner) {
+        double length = Math.pow(center[0] - corner[0], 2);
+        length += Math.pow(center[1] - corner[1], 2);
+        length = Math.sqrt(length);
+        return QR_DIAGONAL_DISTANCE / length;
+    }
+
+    private double[] getDirectionFromCenter(double[] qrCenter, int xDim, int yDim, double scale) {
+        double[] res = new double[2];
+        res[0] = xDim / 2 - qrCenter[0];
+        res[1] = yDim / 2 - qrCenter[1];
+        res[0] *= scale;
+        res[1] *= scale;
+        return res;
     }
 
     private double getAngle(double[] center, double[] topLeftCorner) {
@@ -199,10 +233,10 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         return candidate;
     }
 
-    private void publish(Barcode code, double angle, long startTime) {
+    private void publish(Barcode code, double angle, double[] dirFromCenter, long startTime) {
         long stopTime = System.currentTimeMillis();
         String message = "PHONE_1:" + formatTimestamp(startTime) + ":" + formatTimestamp(stopTime)
-                + ":QR_1:" + code.rawValue + "," + angle;
+                + ":QR_1:" + code.rawValue + "," + angle + "," + dirFromCenter[0] + "," + dirFromCenter[1];
         try {
             mqtt.publishMessage(message);
         } catch (Exception e) {
