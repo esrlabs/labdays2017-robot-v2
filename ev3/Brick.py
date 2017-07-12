@@ -33,7 +33,9 @@ class Brick:
         while True:
             e = self._msg_queue.get(timeout=10)
             if not e:
+                print ("Start")
                 self.getSensorData()
+                print("End")
                 self.reset_queue_listener()
             else:
                 e[0](e[1])
