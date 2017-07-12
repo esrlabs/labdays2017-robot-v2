@@ -43,11 +43,11 @@ class Pi:
             if dataparts[0] == 'BRICK_1':
                 if len(dataparts) == 5:
                     if dataparts[3] == 'IR_1':
-                        ir1_value = int(dataparts[4])
+                        ir1_value = int(float(dataparts[4]))
                     elif dataparts[3] == 'IR_2':
-                        ir2_value = int(dataparts[4])
+                        ir2_value = int(float(dataparts[4]))
                     elif dataparts[3] == 'US':
-                        us_value = int(dataparts[4])
+                        us_value = int(float(dataparts[4]))
 
                     got_new_data_from_brick = True
 
