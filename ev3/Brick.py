@@ -30,18 +30,17 @@ class Brick:
         self._msg_queue.put((self.setSpeed, command_data))
 
     def run_queue_listener(self):
+        self._msg_queue.put(None)
         while True:
             e = self._msg_queue.get(timeout=10)
             if not e:
-                print ("Start")
                 self.getSensorData()
-                print("End")
                 self.reset_queue_listener()
             else:
                 e[0](e[1])
 
     def reset_queue_listener(self):
-        self.t = Timer(0.5, lambda: print("Hi Test self._msg_queue.put(None)"))
+        self.t = Timer(0.5, lambda: self._msg_queue.put(None))
         self.t.start()
 
 
