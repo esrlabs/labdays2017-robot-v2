@@ -25,7 +25,7 @@ class CommServer(Thread):
             print("Connected from BRICK_1 successfully")
         else:
             print("Connection from BRICK_1 failed")
-        self._mqtt_client.subscribe("{}/#".format(self._sub_topic))
+        self._mqtt_client.subscribe("{}/in".format(self._sub_topic))
 
     def on_message(self, client, userdata, msg):
         self._callback(msg)
