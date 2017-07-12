@@ -162,18 +162,19 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             final double angle = getAngle(center, new double[]{point.x, point.y});
             double scale = getScale(center, new double[]{point.x, point.y});
             final double[] fromCenter = getDirectionFromCenter(center, mat.cols(), mat.rows(), scale);
-            Log.d(TAG, "Angle: " + angle + " Scale: " + scale + " FromCenter: " + Arrays.toString(fromCenter));
+            final double[] pos = calculateGlobalPos(code.rawValue, fromCenter, angle);
+            Log.d(TAG, "Angle: " + angle + " Scale: " + scale + " Position: " + Arrays.toString(pos));
             mHandler.post(new Runnable() {
                 @Override
                 public void run() {
-                    setTitle(String.format(Locale.ENGLISH,"%s,%.4f,%.4f,%.4f",
+                    setTitle(String.format(Locale.ENGLISH, "%s,%.4f,%.4f,%.4f",
                             code.rawValue,
                             angle,
-                            fromCenter[0],
-                            fromCenter[1]));
+                            pos[0],
+                            pos[1]));
                 }
             });
-            publish(code, angle, fromCenter, start);
+            publish(code, angle, pos, start);
         }
         return mat;
     }
@@ -184,7 +185,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         double length = Math.pow(center[0] - corner[0], 2);
         length += Math.pow(center[1] - corner[1], 2);
         length = Math.sqrt(length);
-        return QR_DIAGONAL_DISTANCE / length;
+        return QR_DIAGONAL_DISTANCE / 2 / length;
     }
 
     private double[] getDirectionFromCenter(double[] qrCenter, int xDim, int yDim, double scale) {
@@ -206,6 +207,29 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             angle -= 2 * Math.PI;
         }
         return angle;
+    }
+
+    private double[] calculateGlobalPos(String code, double[] offset, double angle) {
+        double[] rotated = offsetToGlobalCoords(offset, angle);
+        double[] pos = new double[2];
+        pos[0] = Integer.parseInt(code.substring(1, 3));
+        pos[1] = Integer.parseInt(code.substring(3, 5));
+        pos[0] *= 3;
+        pos[1] *= 3;
+        pos[0] += rotated[0];
+        pos[1] += rotated[1];
+        return pos;
+    }
+
+    private double[] offsetToGlobalCoords(double[] offset, double degrees) {
+        degrees = -degrees;
+        double x = offset[0];
+        double y = offset[1];
+        double[] result = new double[2];
+        result[0] = x * Math.cos(degrees) - y * Math.sin(degrees);
+        result[1] = x * Math.sin(degrees) + y * Math.cos(degrees);
+        result[1] = -result[1];
+        return result;
     }
 
     private double[] getCenter(Barcode code) {
