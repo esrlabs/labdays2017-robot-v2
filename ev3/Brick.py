@@ -59,7 +59,7 @@ class Brick:
         line1 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.motorLeftId, value)
         line2 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time2, time3, self.motorRightId, value)
 
-		lines = '{}\n{}'.format(line1, line2)
+        lines = '{}\n{}'.format(line1, line2)
         self.commserver.send_msg(self, lines)
         print("Successfully send {} to MQTT".format(lines))
 
@@ -82,7 +82,7 @@ class Brick:
 
         line3 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.ultrasonicId, value)
 
-		lines = '{}\n{}\n{}'.format(line1, line2, line3)
+        lines = '{}\n{}\n{}'.format(line1, line2, line3)
         self.commserver.send_msg(self, lines)
         print("Successfully send {} to MQTT".format(lines))
 
@@ -96,8 +96,8 @@ def main():
     brick.setSpeed(25)
     sleep(2)
     brick.setSpeed(0)
-	
-	brick.run_queue_listener()
+    
+    brick.run_queue_listener()
 
 
 if __name__ == '__main__':
