@@ -26,6 +26,7 @@ class Brick:
         self.commserver.est_conn('172.32.2.167', 1883, 60)
 
     def data_received(self, msg):
+        print(msg)
         command_id, command_data = msg.split(":")
         self._msg_queue.put((self.setSpeed, command_data))
 
@@ -46,8 +47,9 @@ class Brick:
 
     def setSpeed(self, command_data):
         leftspeed, rightspeed = command_data.split(",")
-        left_i = int(leftspeed, 10);
-        right_i = int(rightspeed, 10);
+        print(command_data)
+        left_i = int(leftspeed)
+        right_i = int(rightspeed)
 
         time1 = time()
 
