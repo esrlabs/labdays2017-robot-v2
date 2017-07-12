@@ -5,20 +5,19 @@ from threading import Thread, Timer
 
 
 class CommServer(Thread):
-    def __init__(self, sub_topic, send_topic, receive_callback):
+    def __init__(self, sub_topic, receive_callback):
         self._mqtt_client = mqtt.Client()
         self._mqtt_client.on_connect = self.on_connect
         self._mqtt_client.on_message = self.on_message
         self._sub_topic = sub_topic
-        self._send_topic = send_topic
         self._callback = receive_callback
 
     def est_conn(self, ip, port, keepalive):
         self._mqtt_client.connect(ip, port, keepalive)
         self._mqtt_client.loop_start()
 
-    def send_msg(self, message):
-        self._mqtt_client.publish(self._send_topic, message)
+    def send_msg(self, topic, message):
+        self._mqtt_client.publish(topic, message)
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:

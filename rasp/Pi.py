@@ -26,11 +26,8 @@ class Pi:
         self.motor_right_speed = 0
 
         self._msg_queue = queue.Queue()
-        self.commserver = CommServer('#/out', 'brick/in', self.data_received)
+        self.commserver = CommServer('#/out', self.data_received)
         self.commserver.est_conn('172.32.2.167', 1883, 60)
-
-        self.webserver = CommServer('webserver/webserver', 'web/in', self.data_received)
-        self.webserver.est_conn('172.32.2.167', 1833, 60)
 
     def data_received(self, msg):
         sensordata = msg.split("\n")
@@ -86,10 +83,10 @@ class Pi:
 
             # Send command to brick
             command_string = '{}:{},{}'.format(self.speedCommand, self.motor_left_speed, self.motor_right_speed)
-            self.commserver.send_msg(command_string)
+            self.commserver.send_msg('brick/in', command_string)
 
             # Send message to webserver
-            self.commserver.send_msg(generate_json())
+            self.commserver.send_msg('web/in', self.generate_json())
 
     def generate_json(self):
         webserver_data = {
