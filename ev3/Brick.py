@@ -39,7 +39,7 @@ class Brick:
                 e[0](e[1])
 
     def reset_queue_listener(self):
-        self.t = Timer(0.1, lambda: self._msg_queue.put(None))
+        self.t = Timer(0.5, lambda: print("Hi Test self._msg_queue.put(None)"))
         self.t.start()
 
 
