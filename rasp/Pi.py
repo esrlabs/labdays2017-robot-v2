@@ -123,6 +123,8 @@ def main():
     pi = Pi()
 
     #pi.run_queue_listener()
+	while True:
+	    pass
 
 
 if __name__ == '__main__':
