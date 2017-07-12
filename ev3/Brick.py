@@ -44,15 +44,15 @@ class Brick:
         self._msg_queue.put(None)
 
     def setSpeed(self, command_data):
-        leftspeed, rightspeed = int(command_data.split(","), 10)
+        leftspeed, rightspeed = command_data.split(",")
 
         time1 = time()
 
-        self.motors.setSpeedLeft(leftspeed)
+        self.motors.setSpeedLeft(int(leftspeed, 10))
 
         time2 = time()
 
-        self.motors.setSpeedRight(rightspeed)
+        self.motors.setSpeedRight(int(rightspeed, 10))
 
         time3 = time()
 
