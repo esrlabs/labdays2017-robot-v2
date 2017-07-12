@@ -89,13 +89,13 @@ class Brick:
 
 def main():
     brick = Brick()
-    brick.setSpeed(-25)
+    brick.setSpeed("-25,-25")
     sleep(1)
     brick.getSensorData()
     sleep(1)
-    brick.setSpeed(25)
+    brick.setSpeed("25,25")
     sleep(2)
-    brick.setSpeed(0)
+    brick.setSpeed("0,0")
     
     brick.run_queue_listener()
 
