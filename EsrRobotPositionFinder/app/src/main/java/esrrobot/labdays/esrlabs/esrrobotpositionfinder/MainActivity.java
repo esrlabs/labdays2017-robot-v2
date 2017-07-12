@@ -1,19 +1,14 @@
 package esrrobot.labdays.esrlabs.esrrobotpositionfinder;
 
-import android.graphics.Bitmap;
-import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.MenuItem;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 
-import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.barcode.Barcode;
-import com.google.android.gms.vision.barcode.BarcodeDetector;
 
 import org.eclipse.paho.client.mqttv3.IMqttMessageListener;
 import org.eclipse.paho.client.mqttv3.MqttException;
@@ -22,10 +17,9 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
-import org.opencv.android.Utils;
 import org.opencv.core.Mat;
-import org.opencv.core.Scalar;
-import org.opencv.imgproc.Imgproc;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
@@ -35,11 +29,11 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private CustomCameraView mOpenCvCameraView;
     private boolean mIsJavaCamera = true;
     private MenuItem mItemSwitchCamera = null;
-    private BarcodeDetector mBarcodeDetector = null;
     private Handler mHandler;
     private MQTTConnection mqtt;
     private int mWidth;
     private int mHeight;
+    private ImageProcessing mImageProcessing;
 
     private Runnable mCamFocus = new Runnable() {
         @Override
@@ -78,8 +72,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         Log.i(TAG, "called onCreate");
         super.onCreate(savedInstanceState);
         mHandler = new Handler();
-        mBarcodeDetector = new BarcodeDetector.Builder(this).build();
-
+        mImageProcessing = new ImageProcessing(this);
 
         try {
             mqtt = new MQTTConnection(this);
@@ -142,20 +135,15 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
         Mat mat = inputFrame.rgba();
         long start = System.currentTimeMillis();
-        Bitmap bitmap = Bitmap.createBitmap(mat.cols(), mat.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(mat, bitmap);
-        Frame frame = new Frame.Builder().setBitmap(bitmap).build();
-        SparseArray<Barcode> barcodes = mBarcodeDetector.detect(frame);
 
-        final Barcode code = findBarcode(barcodes, mat.cols(), mat.rows());
-        if (code == null) {
-            return mat;
+        final Barcode code = mImageProcessing.findBarcode(mat);
+        List<double[]> lines = mImageProcessing.findLines(mat);
+        mImageProcessing.addDebugGraphics(mat, code, lines);
+        if (code != null) {
+            Log.d(TAG, "Code: " + code.rawValue);
+
+            publish(code, start);
         }
-        Log.d(TAG, "Code: " + code.rawValue);
-        for (int j = 0; j < 4; ++j) {
-            drawLine(mat, code.cornerPoints, j, (j + 1) % 4, new Scalar(255, 0, 0));
-        }
-        publish(code, start);
         return mat;
     }
 
@@ -177,48 +165,6 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             fraction = "0" + fraction;
         }
         return time / 1000 + "." + fraction;
-    }
-
-    private Barcode findBarcode(SparseArray<Barcode> barcodes, int xDim, int yDim) {
-        double closestDist = Double.POSITIVE_INFINITY;
-        Barcode closest = null;
-        for (int i = 0; i < barcodes.size(); ++i) {
-            Barcode current = barcodes.valueAt(i);
-            double dist = squaredDistanceFromCenter(current.cornerPoints, xDim, yDim);
-            if (dist < closestDist) {
-                closest = current;
-                closestDist = dist;
-            }
-        }
-        return closest;
-    }
-
-    private double squaredDistanceFromCenter(Point[] data, int xDim, int yDim) {
-        int x = 0;
-        int y = 0;
-        for (int i = 0; i < 4; ++i) {
-            x += data[i].x;
-            y += data[i].y;
-        }
-        x /= 4;
-        y /= 4;
-
-        int centerX = xDim / 2;
-        int centerY = yDim / 2;
-
-        return Math.pow(centerX - x, 2) + Math.pow(centerY - y, 2);
-    }
-
-    private void drawLine(Mat mat, Point[] points, int from, int to, Scalar color) {
-        int cols = mat.cols();
-        int rows = mat.rows();
-        org.opencv.core.Point p1 = convert(points[from]);
-        org.opencv.core.Point p2 = convert(points[to]);
-        Imgproc.line(mat, p1, p2, color, 10);
-    }
-
-    private org.opencv.core.Point convert(Point p) {
-        return new org.opencv.core.Point(p.x, p.y);
     }
 
     /**
