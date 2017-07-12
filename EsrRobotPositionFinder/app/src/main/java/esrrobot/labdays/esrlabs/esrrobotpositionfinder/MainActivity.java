@@ -137,20 +137,26 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         long start = System.currentTimeMillis();
 
         final Barcode code = mImageProcessing.findBarcode(mat);
-        List<double[]> lines = mImageProcessing.findLines(mat);
-        mImageProcessing.addDebugGraphics(mat, code, lines);
+        List<double[]> rawLines = mImageProcessing.findLines(mat);
+        mImageProcessing.addDebugGraphics(mat, code, rawLines);
+
+        List<Line> lines = Line.fromRawData(rawLines, mat.cols(), mat.rows());
+        Log.d(TAG, "Lines: " + lines);
+        double angle = Line.calculateMostProminantAngleFromGrid(lines);
+        Log.d(TAG, "Angle: " + angle);
+
         if (code != null) {
             Log.d(TAG, "Code: " + code.rawValue);
 
-            publish(code, start);
+            publish(code, angle, start);
         }
         return mat;
     }
 
-    private void publish(Barcode code, long startTime) {
+    private void publish(Barcode code, double angle, long startTime) {
         long stopTime = System.currentTimeMillis();
         String message = "PHONE_1:" + formatTimestamp(startTime) + ":" + formatTimestamp(stopTime)
-                + ":QR_1:" + code.rawValue;
+                + ":QR_1:" + code.rawValue + "," + angle;
         try {
             mqtt.publishMessage(message);
         } catch (Exception e) {
