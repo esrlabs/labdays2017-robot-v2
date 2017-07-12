@@ -12,6 +12,8 @@ public class Line {
 
     public final double angle;
     public final double distanceFromCenter;
+    public final double[] pointA;
+    public final double[] pointB;
 
     public Line(double[] startEnd, int dimX, int dimY) {
         double dirX = startEnd[0] - startEnd[2];
@@ -22,10 +24,10 @@ public class Line {
         }
         angle = rawAngle;
 
-        double[] a = Arrays.copyOf(startEnd, 2);
-        double[] b = Arrays.copyOfRange(startEnd, 3, 5);
+        pointA = Arrays.copyOf(startEnd, 2);
+        pointB = Arrays.copyOfRange(startEnd, 2, 4);
         double[] center = new double[]{dimX / 2, dimY / 2};
-        distanceFromCenter = lineToPointDistance2D(a, b, center);
+        distanceFromCenter = lineToPointDistance2D(pointA, pointB, center);
     }
 
     //Compute the dot product AB . AC
@@ -62,8 +64,10 @@ public class Line {
         return Math.sqrt(d1 * d1 + d2 * d2);
     }
 
-    //Compute the distance from AB to C
-    private static double lineToPointDistance2D(double[] pointA, double[] pointB, double[] pointC) {
+    /**
+     * Compute the distance from AB to C
+     */
+    public static double lineToPointDistance2D(double[] pointA, double[] pointB, double[] pointC) {
         double dist = crossProduct(pointA, pointB, pointC) / distance(pointA, pointB);
         return Math.abs(dist);
     }
@@ -99,4 +103,24 @@ public class Line {
         }
         return res;
     }
+
+    public static List<Line> getCloseLines(final List<Line> lines, final double[] point, double minDistance) {
+        List<Line> res = new ArrayList<>();
+        for (Line l : lines) {
+            double dist = lineToPointDistance2D(l.pointA, l.pointB, point);
+            if (dist < minDistance) {
+                res.add(l);
+            }
+        }
+        return res;
+    }
+
+    public static double getAverageDistance(List<Line> lines, double[] point) {
+        double dist = 0;
+        for (Line l : lines) {
+            dist += lineToPointDistance2D(l.pointA, l.pointB, point);
+        }
+        return dist / lines.size();
+    }
+
 }

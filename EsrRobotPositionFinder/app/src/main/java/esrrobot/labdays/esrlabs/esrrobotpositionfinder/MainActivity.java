@@ -1,5 +1,6 @@
 package esrrobot.labdays.esrlabs.esrrobotpositionfinder;
 
+import android.graphics.Point;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
@@ -137,20 +138,65 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         long start = System.currentTimeMillis();
 
         final Barcode code = mImageProcessing.findBarcode(mat);
-        List<double[]> rawLines = mImageProcessing.findLines(mat);
-        mImageProcessing.addDebugGraphics(mat, code, rawLines);
-
-        List<Line> lines = Line.fromRawData(rawLines, mat.cols(), mat.rows());
-        Log.d(TAG, "Lines: " + lines);
-        double angle = Line.calculateMostProminantAngleFromGrid(lines);
-        Log.d(TAG, "Angle: " + angle);
 
         if (code != null) {
             Log.d(TAG, "Code: " + code.rawValue);
-
+            List<double[]> rawLines = mImageProcessing.findLines(mat);
+            mImageProcessing.addDebugGraphics(mat, code, rawLines);
+            List<Line> lines = Line.fromRawData(rawLines, mat.cols(), mat.rows());
+//          Log.d(TAG, "Lines: " + lines);
+//          double angle = Line.calculateMostProminantAngleFromGrid(lines);
+            double[] center = getCenter(code);
+            List<Line> closest = Line.getCloseLines(lines, center, 200);
+            if (closest.isEmpty()) {
+                return mat;
+            }
+            Log.d(TAG, "Closest: " + closest);
+            mImageProcessing.addClosestDebug(mat, closest);
+            Point point = getClosest(closest, code.cornerPoints);
+            mImageProcessing.drawPoint(mat, point.x, point.y);
+            double angle = getAngle(center, new double[]{point.x, point.y});
+            Log.d(TAG, "Angle: " + angle);
             publish(code, angle, start);
         }
         return mat;
+    }
+
+    private double getAngle(double[] center, double[] topLeftCorner) {
+        double[] dir = new double[2];
+        dir[0] = center[0] - topLeftCorner[0];
+        dir[1] = center[1] - topLeftCorner[1];
+        double angle = Math.atan2(dir[1], dir[0]);
+        angle += Math.PI / 4;
+        if (angle > Math.PI) {
+            angle -= 2 * Math.PI;
+        }
+        return angle;
+    }
+
+    private double[] getCenter(Barcode code) {
+        double[] res = new double[2];
+        for (Point p : code.cornerPoints) {
+            res[0] += p.x;
+            res[1] += p.y;
+        }
+        res[0] /= 4;
+        res[1] /= 4;
+        return res;
+    }
+
+    private Point getClosest(List<Line> lines, Point[] points) {
+        double dist = Double.POSITIVE_INFINITY;
+        Point candidate = null;
+        for (Point p : points) {
+            double[] point = new double[]{p.x, p.y};
+            double myDist = Line.getAverageDistance(lines, point);
+            if (myDist < dist) {
+                dist = myDist;
+                candidate = p;
+            }
+        }
+        return candidate;
     }
 
     private void publish(Barcode code, double angle, long startTime) {

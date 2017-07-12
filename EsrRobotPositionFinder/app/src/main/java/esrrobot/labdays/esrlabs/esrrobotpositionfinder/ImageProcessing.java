@@ -114,6 +114,10 @@ public class ImageProcessing {
         }
     }
 
+    public void drawPoint(Mat rgbaImage, double x, double y) {
+        Imgproc.circle(rgbaImage, new org.opencv.core.Point(x, y), 5, new Scalar(255, 255, 0), 2);
+    }
+
     private void drawLine(Mat mat, Point[] points, int from, int to, Scalar color) {
         int cols = mat.cols();
         int rows = mat.rows();
@@ -124,5 +128,11 @@ public class ImageProcessing {
 
     private org.opencv.core.Point convert(Point p) {
         return new org.opencv.core.Point(p.x, p.y);
+    }
+
+    public void addClosestDebug(Mat rgbaImage, List<Line> closest) {
+        for (Line l : closest) {
+            Imgproc.line(rgbaImage, new org.opencv.core.Point(l.pointA[0], l.pointA[1]), new org.opencv.core.Point(l.pointB[0], l.pointB[1]), new Scalar(0, 255, 0), 2);
+        }
     }
 }
