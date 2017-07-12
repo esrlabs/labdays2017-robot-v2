@@ -26,7 +26,7 @@ class Pi:
         self.motor_right_speed = 0
 
         self._msg_queue = queue.Queue()
-        self.commserver = CommServer('#/out', self.data_received)
+        self.commserver = CommServer('+/out', self.data_received)
         self.commserver.est_conn('172.32.2.167', 1883, 60)
 
     def data_received(self, msg):
@@ -37,11 +37,11 @@ class Pi:
         ir2_value = 0
         us_value = 0
 
-        for i in sensordata.length:
-            dataparts = sensordata[i].split(":")
+        for s in sensordata:
+            dataparts = s.split(":")
 
             if dataparts[0] == 'BRICK_1':
-                if dataparts.length == 5:
+                if len(dataparts) == 5:
                     if dataparts[3] == 'IR_1':
                         ir1_value = int(dataparts[4])
                     elif dataparts[3] == 'IR_2':
@@ -52,10 +52,10 @@ class Pi:
                     got_new_data_from_brick = True
 
             elif dataparts[0] == 'PHONE_1':
-                if dataparts.length == 5:
+                if len(dataparts) == 5:
                     if dataparts[3] == 'QR_1':
                         qr_data = dataparts[4].split(",")
-                        if qr_data.length == 4:
+                        if len(qr_data) == 4:
                             self.phone_qrcode = qr_data[0]
                             self.phone_angle = qr_data[1]
                             self.phone_xpos = qr_data[2]
