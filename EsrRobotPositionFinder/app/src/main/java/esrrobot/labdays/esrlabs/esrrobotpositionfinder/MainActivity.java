@@ -32,12 +32,22 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     private static final String TAG = "EsrRobotPositionFinder";
 
-    private CameraBridgeViewBase mOpenCvCameraView;
+    private CustomCameraView mOpenCvCameraView;
     private boolean mIsJavaCamera = true;
     private MenuItem mItemSwitchCamera = null;
     private BarcodeDetector mBarcodeDetector = null;
     private Handler mHandler;
     private MQTTConnection mqtt;
+    private int mWidth;
+    private int mHeight;
+
+    private Runnable mCamFocus = new Runnable() {
+        @Override
+        public void run() {
+            mOpenCvCameraView.configureFocus(mWidth, mHeight);
+            mHandler.postDelayed(this, 1000);
+        }
+    };
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
@@ -88,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
         setContentView(R.layout.tutorial1_surface_view);
 
-        mOpenCvCameraView = (CameraBridgeViewBase) findViewById(R.id.tutorial1_activity_java_surface_view);
+        mOpenCvCameraView = (CustomCameraView) findViewById(R.id.tutorial1_activity_java_surface_view);
 
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
 
@@ -121,10 +131,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             mOpenCvCameraView.disableView();
     }
 
-    public void onCameraViewStarted(int width, int height) {
+    public void onCameraViewStarted(final int width, final int height) {
+        mHandler.postDelayed(mCamFocus, 1000);
     }
 
     public void onCameraViewStopped() {
+        mHandler.removeCallbacks(mCamFocus);
     }
 
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
