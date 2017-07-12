@@ -5,7 +5,7 @@ import paho.mqtt.client as mqtt
 from threading import Thread, Timer
 
 
-class CommandServer(Thread):
+class CommServer(Thread):
     def __init__(self, sub_topic, send_topic):
         self._mqtt_client = mqtt.Client()
         self._mqtt_client.on_connect = self.on_connect
@@ -52,7 +52,7 @@ def main():
     ip = args['--ip']
     port = int(args['--port'], 10)
     keepalive = int(args['--keepalive'], 10)
-    cmd_server = CommandServer(send_topic, sub_topic)
+    cmd_server = CommServer(send_topic, sub_topic)
     cmd_server.start_subscription(ip, port, keepalive)
 
 
