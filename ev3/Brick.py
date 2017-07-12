@@ -39,9 +39,9 @@ class Brick:
                 e[0](e[1])
 
     def reset_queue_listener(self):
-        t = Timer(0.1, self.run_queue_listener)
+        t = Timer(0.1, lambda: self._msg_queue.put(None))
         t.start()
-        self._msg_queue.put(None)
+
 
     def setSpeed(self, command_data):
         leftspeed, rightspeed = command_data.split(",")
@@ -65,7 +65,7 @@ class Brick:
         self.commserver.send_msg(lines)
         print("Successfully send {} to MQTT".format(lines))
 
-    def getSensorData(self, _):
+    def getSensorData(self):
         time1 = time()
         value = self.sensors.getData('IR_1')
         time2 = time()
