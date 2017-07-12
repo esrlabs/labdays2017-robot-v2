@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 
+import .io.MotorControl
+import .io.SensorArray
+
 import ev3dev.ev3 as ev3
 from time import time, sleep
 
-class Robot:
+class Brick:
 
-#  motorLeft, motorRight = None
-#  infrared1, infrared2, ultrasonic = None
-    
-#  time1, time2, time3 = 0.0
-  
   def __init__(self):
     self.originatorId = 'BRICK_1'
     self.motorLeftId = 'ENGINE_1'
@@ -18,20 +16,17 @@ class Robot:
     self.infrared2Id = 'IR_2'
     self.ultrasonicId = 'US_1'
 
-    self.motorLeft = ev3.LargeMotor('outA')
-    self.motorRight = ev3.LargeMotor('outB')
-    self.infrared1 = ev3.InfraredSensor('in1')
-    self.infrared2 = ev3.InfraredSensor('in4')
-    self.ultrasonic = ev3.UltrasonicSensor('in2')
+	self.motors = MotorControl('outA', 'outB')
+	self.sensors = SensorArray('in1', 'in4', 'in2')
 
   def setSpeed(self, value):
     time1 = time()
 	
-    self.motorLeft.run_direct(duty_cycle_sp = value)
+    self.motors.setSpeedLeft(value)
 	
     time2 = time()
 	
-    self.motorRight.run_direct(duty_cycle_sp = value)
+    self.motors.setSpeedRight(value)
 	
     time3 = time()
 	
@@ -43,19 +38,19 @@ class Robot:
 	
   def getSensorData(self):
     time1 = time()
-    value = self.infrared1.value()
+    value = self.sensors.getData('IR_1')
     time2 = time()
 	
     line1 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.infrared1Id, value)
 	
     time1 = time()
-    value = self.infrared2.value()
+    value = self.sensors.getData('IR_2')
     time2 = time()
 	
     line2 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.infrared2Id, value)
 	
     time1 = time()
-    value = self.ultrasonic.value()
+    value = self.sensors.getData('US')
     time2 = time()
 	
     line3 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.ultrasonicId, value)
@@ -67,14 +62,14 @@ class Robot:
 	
 
 def main():
-    robot_ctrl = Robot()
-    robot_ctrl.setSpeed(-25)
+    brick = Brick()
+    brick.setSpeed(-25)
     sleep(1)
-    robot_ctrl.getSensorData()
+    brick.getSensorData()
     sleep(1)
-    robot_ctrl.setSpeed(25)
+    brick.setSpeed(25)
     sleep(2)
-    robot_ctrl.setSpeed(0)
+    brick.setSpeed(0)
 
 if __name__ == '__main__':
     main()
