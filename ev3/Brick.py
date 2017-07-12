@@ -22,7 +22,7 @@ class Brick:
         self.motors = MotorControl('outA', 'outB')
         self.sensors = SensorArray('in1', 'in4', 'in2')
         self._msg_queue = queue.Queue()
-        self.commserver = CommServer('brick', 'brick', self.data_received)
+        self.commserver = CommServer('brick/in', 'brick/out', self.data_received)
         self.commserver.est_conn('172.32.2.167', 1883, 60)
 
     def data_received(self, msg):

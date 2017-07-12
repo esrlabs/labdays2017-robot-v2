@@ -28,7 +28,7 @@ class CommServer(Thread):
         self._mqtt_client.subscribe(self._sub_topic)
 
     def on_message(self, client, userdata, msg):
-        self._callback(msg.payload.decode('utf-8'))
+        self._callback(str(msg.payload))
 
 
 def main():
