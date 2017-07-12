@@ -2,64 +2,88 @@
 
 from robo_io.MotorControl import MotorControl
 from robo_io.SensorArray import SensorArray
+from comm.CommServer import CommServer
 
 import ev3dev.ev3 as ev3
 from time import time, sleep
+import queue
+
 
 class Brick:
+    def __init__(self):
+        self.originatorId = 'BRICK_1'
+        self.motorLeftId = 'ENGINE_1'
+        self.motorRightId = 'ENGINE_2'
+        self.infrared1Id = 'IR_1'
+        self.infrared2Id = 'IR_2'
+        self.ultrasonicId = 'US_1'
 
-  def __init__(self):
-    self.originatorId = 'BRICK_1'
-    self.motorLeftId = 'ENGINE_1'
-    self.motorRightId = 'ENGINE_2'
-    self.infrared1Id = 'IR_1'
-    self.infrared2Id = 'IR_2'
-    self.ultrasonicId = 'US_1'
+        self.motors = MotorControl('outA', 'outB')
+        self.sensors = SensorArray('in1', 'in4', 'in2')
+        self._msg_queue = queue.Queue()
+        self.commserver = CommServer('brick', 'log', self.data_received)
+        self.commserver.est_conn()
 
-    self.motors = MotorControl('outA', 'outB')
-    self.sensors = SensorArray('in1', 'in4', 'in2')
+    def data_received(self, msg):
+        # ToDo Decode command parameter
+        speed_value = 0
+        self._msg_queue.put((self.setSpeed, speed_value))
 
-  def setSpeed(self, value):
-    time1 = time()
-    
-    self.motors.setSpeedLeft(value)
-    
-    time2 = time()
-    
-    self.motors.setSpeedRight(value)
-    
-    time3 = time()
-    
-    line1 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.motorLeftId, value)
-    line2 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time2, time3, self.motorRightId, value)
-    
-    print(line1)
-    print(line2)
-    
-  def getSensorData(self):
-    time1 = time()
-    value = self.sensors.getData('IR_1')
-    time2 = time()
-    
-    line1 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.infrared1Id, value)
-    
-    time1 = time()
-    value = self.sensors.getData('IR_2')
-    time2 = time()
-    
-    line2 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.infrared2Id, value)
-    
-    time1 = time()
-    value = self.sensors.getData('US')
-    time2 = time()
-    
-    line3 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.ultrasonicId, value)
-    
-    print(line1)
-    print(line2)
-    print(line3)
+    def run_queue_listener(self):
+        while True:
+            self.getSensorData()
+            e = self._msg_queue.get()
+            if e:
+                last_command_time = time.time()
+                e[0](e[1])
+            elif last_command_time - time.time() >= 10:
+                self.setSpeed(0)
+            else:
+                pass
+            time.sleep(0.1)
 
-    
+    def setSpeed(self, value):
+        time1 = time()
+
+        self.motors.setSpeedLeft(value)
+
+        time2 = time()
+
+        self.motors.setSpeedRight(value)
+
+        time3 = time()
+
+        line1 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.motorLeftId, value)
+        line2 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time2, time3, self.motorRightId, value)
+
+        self.commserver.send_msg(self, line1)
+        self.commserver.send_msg(self, line2)
+        print("Successfully send {} and {} to MQTT".format(line1, line2))
+
+    def getSensorData(self):
+        time1 = time()
+        value = self.sensors.getData('IR_1')
+        time2 = time()
+
+        line1 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.infrared1Id, value)
+
+        time1 = time()
+        value = self.sensors.getData('IR_2')
+        time2 = time()
+
+        line2 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.infrared2Id, value)
+
+        time1 = time()
+        value = self.sensors.getData('US')
+        time2 = time()
+
+        line3 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.ultrasonicId, value)
+
+        self.commserver.send_msg(self, line1)
+        self.commserver.send_msg(self, line2)
+        self.commserver.send_msg(self, line3)
+        print("Successfully send {}, {} and {} to MQTT".format(line1, line2, line3))
+
 
 def main():
     brick = Brick()
@@ -71,6 +95,6 @@ def main():
     sleep(2)
     brick.setSpeed(0)
 
+
 if __name__ == '__main__':
     main()
-

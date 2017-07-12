@@ -1,19 +1,19 @@
 #!/usr/bin/env python
-import queue
 from docopt import docopt
 import paho.mqtt.client as mqtt
 from threading import Thread, Timer
 
 
 class CommServer(Thread):
-    def __init__(self, sub_topic, send_topic):
+    def __init__(self, sub_topic, send_topic, receive_callback):
         self._mqtt_client = mqtt.Client()
         self._mqtt_client.on_connect = self.on_connect
         self._mqtt_client.on_message = self.on_message
         self._sub_topic = sub_topic
         self._send_topic = send_topic
+        self._callback = receive_callback
 
-    def start_subscription(self, ip, port, keepalive):
+    def est_conn(self, ip, port, keepalive):
         self._mqtt_client.connect(ip, port, keepalive)
         self._mqtt_client.loop_start()
 
@@ -25,11 +25,10 @@ class CommServer(Thread):
             print("Connected from BRICK_1 successfully")
         else:
             print("Connection from BRICK_1 failed")
-        self._mqtt_client.subscribe("{}/#".format(self._topic))
+        self._mqtt_client.subscribe("{}/#".format(self._sub_topic))
 
     def on_message(self, client, userdata, msg):
-        # ToDo Add Callback to Brick_01.py
-        pass
+        self._callback(msg)
 
 
 def main():
@@ -53,7 +52,7 @@ def main():
     port = int(args['--port'], 10)
     keepalive = int(args['--keepalive'], 10)
     cmd_server = CommServer(send_topic, sub_topic)
-    cmd_server.start_subscription(ip, port, keepalive)
+    cmd_server.est_conn(ip, port, keepalive)
 
 
 if __name__ == '__main__':
