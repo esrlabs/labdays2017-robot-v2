@@ -62,7 +62,7 @@ class Brick:
         line2 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time2, time3, self.motorRightId, right_i)
 
         lines = '{}\n{}'.format(line1, line2)
-        self.commserver.send_msg(self, lines)
+        self.commserver.send_msg(lines)
         print("Successfully send {} to MQTT".format(lines))
 
     def getSensorData(self, _):
@@ -85,7 +85,7 @@ class Brick:
         line3 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.ultrasonicId, value)
 
         lines = '{}\n{}\n{}'.format(line1, line2, line3)
-        self.commserver.send_msg(self, lines)
+        self.commserver.send_msg(lines)
         print("Successfully send {} to MQTT".format(lines))
 
 
