@@ -6,25 +6,19 @@ from threading import Thread, Timer
 
 
 class CommandServer(Thread):
-    def __init__(self, topic):
-        self._msg_queue = queue.Queue()
+    def __init__(self, sub_topic, send_topic):
         self._mqtt_client = mqtt.Client()
         self._mqtt_client.on_connect = self.on_connect
         self._mqtt_client.on_message = self.on_message
-        self._topic = topic
+        self._sub_topic = sub_topic
+        self._send_topic = send_topic
 
     def start_subscription(self, ip, port, keepalive):
         self._mqtt_client.connect(ip, port, keepalive)
         self._mqtt_client.loop_start()
-        self.run_queue_listener()
 
-    def run_queue_listener(self):
-        while True:
-            e = self._msg_queue.get(timeout=10)
-            process(e)
-
-    def send_msg(self, message, _subtopic='out'):
-        self._mqtt_client.publish("{}/{}".format(self._topic, _subtopic), message)
+    def send_msg(self, message):
+        self._mqtt_client.publish("{}/out".format(self._send_topic), message)
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -34,39 +28,31 @@ class CommandServer(Thread):
         self._mqtt_client.subscribe("{}/#".format(self._topic))
 
     def on_message(self, client, userdata, msg):
-        self._msg_queue.put((msg.topic, str(msg.payload)))
-
-
-def periodical_call(timeout, command):
-    t = Timer(timeout, process(command))
-    #ToDo Do Some Stuff
-    t.start()
-
-
-def process(command):
-    #ToDo Execute the Commands to the EV3 Brick
-    pass
+        # ToDo Add Callback to Brick_01.py
+        pass
 
 
 def main():
     '''
     usage:
-    brick [--topic name] [--ip address] [--port number] [--keepalive seconds]
+    brick [--send_topic name] [--sub_topic name] [--ip address] [--port number] [--keepalive seconds]
 
     options:
 
     --ip adress             ip of the MQTT Broker [default: 172.32.2.167]
     --port number           port of the MQTT Broker [default: 1883]
     --keepalive seconds     maximum period in seconds allowed between communications with the broker [default: 60]
-    --topic name            Topic Channel to send messages [default: brick]
+    --sub_topic name        Topic Channel to subscribe to messages [default: brick]
+    --send_topic name       Topic Channel to send messages [default: log]
     --help
     '''
     args = docopt(main.__doc__)
-    topic = args['--topic']
+    sub_topic = args['--sub_topic']
+    send_topic = args['--send_topic']
     ip = args['--ip']
     port = int(args['--port'], 10)
     keepalive = int(args['--keepalive'], 10)
-    cmd_server = CommandServer(topic)
+    cmd_server = CommandServer(send_topic, sub_topic)
     cmd_server.start_subscription(ip, port, keepalive)
 
 
