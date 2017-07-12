@@ -2,11 +2,10 @@
 import queue
 from docopt import docopt
 import paho.mqtt.client as mqtt
-from threading import Thread
+from threading import Thread, Timer
 
 
 class CommandServer(Thread):
-
     def __init__(self, topic):
         self._msg_queue = queue.Queue()
         self._mqtt_client = mqtt.Client()
@@ -14,15 +13,18 @@ class CommandServer(Thread):
         self._mqtt_client.on_message = self.on_message
         self._topic = topic
 
-    def start(self, ip, port, keepalive):
+    def start_subscription(self, ip, port, keepalive):
         self._mqtt_client.connect(ip, port, keepalive)
         self._mqtt_client.loop_start()
-        self.run()
+        self.run_queue_listener()
 
-    def run(self):
+    def run_queue_listener(self):
         while True:
             e = self._msg_queue.get(timeout=10)
-            print(e)
+            process(e)
+
+    def send_msg(self, message, _subtopic='out'):
+        self._mqtt_client.publish("{}/{}".format(self._topic, _subtopic), message)
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -32,7 +34,18 @@ class CommandServer(Thread):
         self._mqtt_client.subscribe("{}/#".format(self._topic))
 
     def on_message(self, client, userdata, msg):
-        self._msg_queue.put(msg.topic + " " + str(msg.payload))
+        self._msg_queue.put((msg.topic, str(msg.payload)))
+
+
+def periodical_call(timeout, command):
+    t = Timer(timeout, process(command))
+    #ToDo Do Some Stuff
+    t.start()
+
+
+def process(command):
+    #ToDo Execute the Commands to the EV3 Brick
+    pass
 
 
 def main():
@@ -54,7 +67,8 @@ def main():
     port = int(args['--port'], 10)
     keepalive = int(args['--keepalive'], 10)
     cmd_server = CommandServer(topic)
-    cmd_server.start(ip, port, keepalive)
+    cmd_server.start_subscription(ip, port, keepalive)
+
 
 if __name__ == '__main__':
     main()
