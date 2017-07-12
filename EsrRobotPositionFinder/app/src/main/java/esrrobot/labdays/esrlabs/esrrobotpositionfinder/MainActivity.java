@@ -18,6 +18,7 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Scalar;
 
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private int mWidth;
     private int mHeight;
     private ImageProcessing mImageProcessing;
-    private double mCameraOrientation = 0.0;
+    private int mCameraOrientation = 0;
 
     private Runnable mCamFocus = new Runnable() {
         @Override
@@ -172,14 +173,22 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             final double[] pos = calculateGlobalPos(code.rawValue, fromCenter, angle);
             Log.d(TAG, "Angle: " + angle + " Scale: " + scale + " Position: " + Arrays.toString(pos));
 
-            angle += mCameraOrientation;
-            if (angle > Math.PI) {
-                angle -= 2 * Math.PI;
-            }
+            angle = adjustAngle(angle);
 
             publish(code.rawValue, angle, pos, start);
         }
+        if (mCameraOrientation >= 180) {
+            Core.rotate(mat, mat, Core.ROTATE_180);
+        }
         return mat;
+    }
+
+    private double adjustAngle(double angle) {
+        angle += Math.toRadians(mCameraOrientation - 90);
+        if (angle > Math.PI) {
+            angle -= 2 * Math.PI;
+        }
+        return angle;
     }
 
     private static final double QR_DIAGONAL_DISTANCE = 1.85;

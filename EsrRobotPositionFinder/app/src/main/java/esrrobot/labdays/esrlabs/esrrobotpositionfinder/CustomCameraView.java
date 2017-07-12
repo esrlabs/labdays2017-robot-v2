@@ -39,7 +39,7 @@ public class CustomCameraView extends JavaCameraView implements Camera.AutoFocus
         mCamera.autoFocus(this);
     }
 
-    public double getCameraOrientation(int rotation) {
+    public int getCameraOrientation(int rotation) {
         Camera.CameraInfo info = new Camera.CameraInfo();
         for (int i = 0; i < Camera.getNumberOfCameras(); ++i) {
             Camera.getCameraInfo(i, info);
@@ -47,10 +47,9 @@ public class CustomCameraView extends JavaCameraView implements Camera.AutoFocus
                 break;
             }
         }
-        int degOri = info.orientation - 90;
-        double orientation = Math.toRadians(degOri);
+        int degOri = info.orientation;
         Log.d("CustomCameraView", "Orientation: " + degOri);
-        return orientation;
+        return degOri;
     }
 
     @Override

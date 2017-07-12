@@ -22,7 +22,9 @@
         android:theme="@style/AppTheme">
         <service android:name="org.eclipse.paho.android.service.MqttService" >
         </service>
-        <activity android:name=".MainActivity">
+        <activity
+            android:name=".MainActivity"
+            android:screenOrientation="landscape" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
