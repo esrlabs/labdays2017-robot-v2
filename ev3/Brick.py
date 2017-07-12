@@ -44,8 +44,10 @@ class Brick:
         self._msg_queue.put(None)
 
     def setSpeed(self, command_data):
-        time1 = time()
         leftspeed, rightspeed = int(command_data.split(","), 10)
+
+        time1 = time()
+
         self.motors.setSpeedLeft(leftspeed)
 
         time2 = time()
@@ -57,11 +59,11 @@ class Brick:
         line1 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.motorLeftId, value)
         line2 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time2, time3, self.motorRightId, value)
 
-        self.commserver.send_msg(self, line1)
-        self.commserver.send_msg(self, line2)
-        print("Successfully send {} and {} to MQTT".format(line1, line2))
+		lines = '{}\n{}'.format(line1, line2)
+        self.commserver.send_msg(self, lines)
+        print("Successfully send {} to MQTT".format(lines))
 
-    def getSensorData(self):
+    def getSensorData(self, _):
         time1 = time()
         value = self.sensors.getData('IR_1')
         time2 = time()
@@ -80,10 +82,9 @@ class Brick:
 
         line3 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.ultrasonicId, value)
 
-        self.commserver.send_msg(self, line1)
-        self.commserver.send_msg(self, line2)
-        self.commserver.send_msg(self, line3)
-        print("Successfully send {}, {} and {} to MQTT".format(line1, line2, line3))
+		lines = '{}\n{}\n{}'.format(line1, line2, line3)
+        self.commserver.send_msg(self, lines)
+        print("Successfully send {} to MQTT".format(lines))
 
 
 def main():
@@ -95,6 +96,8 @@ def main():
     brick.setSpeed(25)
     sleep(2)
     brick.setSpeed(0)
+	
+	brick.run_queue_listener()
 
 
 if __name__ == '__main__':

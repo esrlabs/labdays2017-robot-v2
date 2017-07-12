@@ -8,16 +8,17 @@ class MotorControl:
   def __init__(self, out_left, out_right):
     self.motorLeft = ev3.LargeMotor(out_left)
     self.motorRight = ev3.LargeMotor(out_right)
+	self.motorLeft.run_direct(duty_cycle_sp = 0)
 
   def setSpeedLeft(self, value):
-    self.motorLeft.run_direct(duty_cycle_sp = value)
+    self.motorLeft.duty_cycle_sp = value
 
   def setSpeedRight(self, value):
-    self.motorRight.run_direct(duty_cycle_sp = value)
+    self.motorRight.duty_cycle_sp = value
 
   def setSpeed(self, value):
-    self.motorLeft.run_direct(duty_cycle_sp = value)
-    self.motorRight.run_direct(duty_cycle_sp = value)
+    self.setSpeedLeft(value)
+    self.setSpeedRight(value)
 	
 
 def main():
