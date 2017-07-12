@@ -39,8 +39,8 @@ class Brick:
                 e[0](e[1])
 
     def reset_queue_listener(self):
-        t = Timer(0.1, lambda: self._msg_queue.put(None))
-        t.start()
+        self.t = Timer(0.1, lambda: self._msg_queue.put(None))
+        self.t.start()
 
 
     def setSpeed(self, command_data):
