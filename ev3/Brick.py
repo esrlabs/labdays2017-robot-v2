@@ -7,6 +7,7 @@ from comm.CommServer import CommServer
 import ev3dev.ev3 as ev3
 from time import time, sleep
 import queue
+from threading import Timer
 
 
 class Brick:
@@ -25,31 +26,30 @@ class Brick:
         self.commserver.est_conn()
 
     def data_received(self, msg):
-        # ToDo Decode command parameter
-        speed_value = 0
-        self._msg_queue.put((self.setSpeed, speed_value))
+        command_id, command_data = msg.split(":")
+        self._msg_queue.put((self.setSpeed, command_data))
 
     def run_queue_listener(self):
         while True:
-            self.getSensorData()
-            e = self._msg_queue.get()
-            if e:
-                last_command_time = time.time()
-                e[0](e[1])
-            elif last_command_time - time.time() >= 10:
-                self.setSpeed(0)
+            e = self._msg_queue.get(timeout=10)
+            if not e:
+                self.reset_queue_listener()
             else:
-                pass
-            time.sleep(0.1)
+                e[0](e[1])
 
-    def setSpeed(self, value):
+    def reset_queue_listener(self):
+        t = Timer(0.1, self.run_queue_listener)
+        t.start()
+        self._msg_queue.put((self.getSensorData, 0))
+
+    def setSpeed(self, command_data):
         time1 = time()
-
-        self.motors.setSpeedLeft(value)
+        leftspeed, rightspeed = int(command_data.split(","), 10)
+        self.motors.setSpeedLeft(leftspeed)
 
         time2 = time()
 
-        self.motors.setSpeedRight(value)
+        self.motors.setSpeedRight(rightspeed)
 
         time3 = time()
 
@@ -60,7 +60,7 @@ class Brick:
         self.commserver.send_msg(self, line2)
         print("Successfully send {} and {} to MQTT".format(line1, line2))
 
-    def getSensorData(self):
+    def getSensorData(self, notused):
         time1 = time()
         value = self.sensors.getData('IR_1')
         time2 = time()
