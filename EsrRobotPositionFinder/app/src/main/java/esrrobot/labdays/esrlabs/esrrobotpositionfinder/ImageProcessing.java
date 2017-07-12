@@ -29,6 +29,9 @@ public class ImageProcessing {
 
     public ImageProcessing(Context context) {
         mBarcodeDetector = new BarcodeDetector.Builder(context).build();
+        if(!mBarcodeDetector.isOperational()){
+            Log.e("ImageProcessing", "Barcode detector not operational");
+        }
     }
 
     public Barcode findBarcode(Mat rgbaImage) {

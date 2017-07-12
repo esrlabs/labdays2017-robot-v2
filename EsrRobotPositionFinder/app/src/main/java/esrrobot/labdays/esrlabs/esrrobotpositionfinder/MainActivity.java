@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private int mWidth;
     private int mHeight;
     private ImageProcessing mImageProcessing;
+    private double mCameraOrientation = 0.0;
 
     private Runnable mCamFocus = new Runnable() {
         @Override
@@ -130,6 +131,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
 
     public void onCameraViewStarted(final int width, final int height) {
         mHandler.postDelayed(mCamFocus, 1000);
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mCameraOrientation = mOpenCvCameraView.getCameraOrientation(getWindowManager().getDefaultDisplay().getRotation());
+            }
+        });
     }
 
     public void onCameraViewStopped() {
@@ -159,21 +166,17 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
             Point point = getClosest(closest, code.cornerPoints);
             mImageProcessing.drawPoint(mat, point.x, point.y);
             mImageProcessing.drawLine(mat, new double[]{mat.cols() / 2, mat.rows() / 2}, center, new Scalar(0, 255, 255));
-            final double angle = getAngle(center, new double[]{point.x, point.y});
+            double angle = getAngle(center, new double[]{point.x, point.y});
             double scale = getScale(center, new double[]{point.x, point.y});
             final double[] fromCenter = getDirectionFromCenter(center, mat.cols(), mat.rows(), scale);
             final double[] pos = calculateGlobalPos(code.rawValue, fromCenter, angle);
             Log.d(TAG, "Angle: " + angle + " Scale: " + scale + " Position: " + Arrays.toString(pos));
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    setTitle(String.format(Locale.ENGLISH, "%s,%.3f,%.3f,%.3f",
-                            code.rawValue,
-                            angle,
-                            pos[0],
-                            pos[1]));
-                }
-            });
+
+            angle += mCameraOrientation;
+            if (angle > Math.PI) {
+                angle -= 2 * Math.PI;
+            }
+
             publish(code.rawValue, angle, pos, start);
         }
         return mat;
@@ -257,11 +260,21 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         return candidate;
     }
 
-    private void publish(String code, double angle, double[] pos, long startTime) {
+    private void publish(final String code, final double angle, final double[] pos, long startTime) {
         long stopTime = System.currentTimeMillis();
         String message = "PHONE_1:" + formatTimestamp(startTime) + ":" + formatTimestamp(stopTime)
                 + ":QR_1:" + code + "," + convertDouble(angle) + "," + convertDouble(pos[0])
                 + "," + convertDouble(pos[1]);
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                setTitle(String.format(Locale.ENGLISH, "%s,%.3f,%.3f,%.3f",
+                        code,
+                        angle,
+                        pos[0],
+                        pos[1]));
+            }
+        });
         try {
             mqtt.publishMessage(message);
         } catch (Exception e) {
