@@ -93,7 +93,7 @@ def main():
     brick = Brick()
     brick.setSpeed("25,25")
     sleep(1)
-    brick.getSensorData(0)
+    brick.getSensorData()
     sleep(1)
     brick.setSpeed("-25,-25")
     sleep(2)
