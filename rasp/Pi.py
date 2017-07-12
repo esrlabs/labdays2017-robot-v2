@@ -96,7 +96,7 @@ class Pi:
                        "ir2": self.brick_ir2,
                        "us1": self.brick_us1}
         }
-        return json.dump(webserver_data)
+        return json.dumps(webserver_data)
 
     def run_queue_listener(self):
         self._msg_queue.put(None)
