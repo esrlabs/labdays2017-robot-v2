@@ -45,19 +45,21 @@ class Brick:
 
     def setSpeed(self, command_data):
         leftspeed, rightspeed = command_data.split(",")
+        left_i = int(leftspeed, 10);
+        right_i = int(rightspeed, 10);
 
         time1 = time()
 
-        self.motors.setSpeedLeft(int(leftspeed, 10))
+        self.motors.setSpeedLeft(left_i)
 
         time2 = time()
 
-        self.motors.setSpeedRight(int(rightspeed, 10))
+        self.motors.setSpeedRight(right_i)
 
         time3 = time()
 
-        line1 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.motorLeftId, value)
-        line2 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time2, time3, self.motorRightId, value)
+        line1 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.motorLeftId, left_i)
+        line2 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time2, time3, self.motorRightId, right_i)
 
         lines = '{}\n{}'.format(line1, line2)
         self.commserver.send_msg(self, lines)
