@@ -12,22 +12,22 @@ class SensorArray:
 
   def getData(self, sensor_type):
     if sensor_type == 'IR_1':
-	  return self.infrared1.value()
-	elif sensor_type == 'IR_2':
-	  return self.infrared2.value()
-	elif sensor_type == 'US':
-	  return self.ultrasonic.value()
-	else:
-	  return 0
+      return self.infrared1.value()
+    elif sensor_type == 'IR_2':
+      return self.infrared2.value()
+    elif sensor_type == 'US':
+      return self.ultrasonic.value()
+    else:
+      return 0
 
   def getAllData(self):
-	return { 'IR_1' : self.getData('IR_1'),
+    return { 'IR_1' : self.getData('IR_1'),
              'IR_2' : self.getData('IR_2'),
-			 'US'   : self.getData('US') }
+             'US'   : self.getData('US') }
 
 def main():
     sensor_array = SensorArray('in1', 'in4', 'in2')
-	
+    
     print(sensor_array.getAllData())
     sleep(1)
     print(sensor_array.getData('IR_1'))

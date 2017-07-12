@@ -22,7 +22,7 @@ class MotorControl:
 
 def main():
     motor_ctrl = MotorControl('outA', 'outB')
-	
+    
     motor_ctrl.setSpeedLeft(-25)
     motor_ctrl.setSpeedRight(-25)
     sleep(1)
