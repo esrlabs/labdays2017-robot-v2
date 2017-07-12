@@ -65,29 +65,31 @@ class Pi:
                             self.phone_ypos = qr_data[3]
 
         if got_new_data_from_brick:
-            # ToDo Send message to webserver
-            pass
+            # Evaluate value of IR_1 and generate command for brick
+            self.brick_ir1 = ir1_value
+            self.brick_ir2 = ir2_value
+            self.brick_us1 = us_value
 
-        # Evaluate value of IR_1 and generate command for brick
-        self.brick_ir1 = ir1_value
-        self.brick_ir2 = ir2_value
-        self.brick_us1 = us_value
+            threshold1 = 35
+            threshold2 = 50
 
-        threshold1 = 35
-        threshold2 = 50
+            if ir1_value < threshold1:
+                self.motor_left_speed = 30
+                self.motor_right_speed = 0
+                self.log = "Turning Left"
+            elif ir1_value > threshold2:
+                self.motor_left_speed = 30
+                self.motor_right_speed = 30
+                self.log = "Going straight at 30"
+            else:
+                self.log = "Doing the same again"
 
-        if ir1_value < threshold1:
-            self.motor_left_speed = 30
-            self.motor_right_speed = 0
-            self.log = "Turning Left"
-        elif ir1_value > threshold2:
-            self.motor_left_speed = 30
-            self.motor_right_speed = 30
-            self.log = "Going straight at 30"
-        else:
-            self.log = "Doing the same again"
+            # Send command to brick
+            command_string = '{}:{},{}'.format(self.speedCommand, self.motor_left_speed, self.motor_right_speed)
+            self.commserver.send_msg(command_string)
 
-        # ToDo Send command to brick
+            # Send message to webserver
+            self.commserver.send_msg(generate_json())
 
     def generate_json(self):
         webserver_data = {
@@ -123,7 +125,7 @@ class Pi:
 def main():
     pi = Pi()
 
-    pi.run_queue_listener()
+    #pi.run_queue_listener()
 
 
 if __name__ == '__main__':
