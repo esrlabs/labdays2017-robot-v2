@@ -35,7 +35,7 @@ class Pi:
         got_new_data_from_brick = False
         ir1_value = 0
         ir2_value = 0
-        us_value = 0
+        us1_value = 0
 
         for s in sensordata:
             dataparts = s.split(":")
@@ -46,8 +46,8 @@ class Pi:
                         ir1_value = int(float(dataparts[4]))
                     elif dataparts[3] == 'IR_2':
                         ir2_value = int(float(dataparts[4]))
-                    elif dataparts[3] == 'US':
-                        us_value = int(float(dataparts[4]))
+                    elif dataparts[3] == 'US_1':
+                        us1_value = int(float(dataparts[4]))
 
                     got_new_data_from_brick = True
 
@@ -65,10 +65,10 @@ class Pi:
             # Evaluate value of IR_1 and generate command for brick
             self.brick_ir1 = ir1_value
             self.brick_ir2 = ir2_value
-            self.brick_us1 = us_value
+            self.brick_us1 = us1_value
 
-            threshold1 = 35
-            threshold2 = 50
+            threshold1 = 22
+            threshold2 = 35
 
             if ir1_value < threshold1:
                 self.motor_left_speed = 30

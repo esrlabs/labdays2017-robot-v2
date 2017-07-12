@@ -9,6 +9,7 @@ class MotorControl:
     self.motorLeft = ev3.LargeMotor(out_left)
     self.motorRight = ev3.LargeMotor(out_right)
     self.motorLeft.run_direct(duty_cycle_sp = 0)
+    self.motorRight.run_direct(duty_cycle_sp = 0)
 
   def setSpeedLeft(self, value):
     self.motorLeft.duty_cycle_sp = value

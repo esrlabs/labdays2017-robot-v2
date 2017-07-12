@@ -47,7 +47,7 @@ class Brick:
 
     def setSpeed(self, command_data):
         leftspeed, rightspeed = command_data.split(",")
-        print(command_data)
+        #print(command_data)
         left_i = int(leftspeed)
         right_i = int(rightspeed)
 
