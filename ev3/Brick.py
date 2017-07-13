@@ -104,7 +104,7 @@ def main():
     
     try:
         brick.run_queue_listener()
-    except e:
+    except:
         brick.setSpeed("0,0")
 
 
