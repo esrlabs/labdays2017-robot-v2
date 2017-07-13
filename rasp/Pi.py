@@ -95,7 +95,7 @@ class Pi:
             self.commserver.send_msg('web/in', self.generate_json())
 
     def generate_json(self):
-        if self.logs == "":
+        if self.log == "":
             webserver_data = {
                 "points": "{}, {}, {}".format(self.phone_xpos, self.phone_ypos, self.phone_angle),
                 "status": {"ir1": self.brick_ir1,
