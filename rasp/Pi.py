@@ -20,7 +20,8 @@ class Pi:
         self.brick_ir1 = 0
         self.brick_ir2 = 0
         self.brick_us1 = 0
-        self.logs = ''
+        self.log = ''
+        self.motor_state = 'UNDEF'
 
         self.motor_left_speed = 0
         self.motor_right_speed = 0
@@ -72,20 +73,25 @@ class Pi:
             us_threshold1 = 350
             us_threshold2 = 500
 
+            self.log = ""
+
             if ir2_value < ir_threshold1 or us1_value < us_threshold1:
                 self.motor_left_speed = 0
                 self.motor_right_speed = 30
-                self.log = "Turning right"
+                if self.motor_state != 'TURN':
+                    self.log = "Turning right"
+                    self.motor_state = 'TURN'
             elif ir2_value > ir_threshold2 or us1_value > us_threshold2:
                 self.motor_left_speed = 30
                 self.motor_right_speed = 30
-                self.log = "Going straight at 30"
-            elif self.motor_left_speed == 0 and self.motor_right_speed == 0:
+                if self.motor_state != 'DRIVE':
+                    self.log = "Going straight at 30"
+                    self.motor_state = 'DRIVE'
+            elif self.motor_state == 'UNDEF':
                 self.motor_left_speed = 0
                 self.motor_right_speed = 30
                 self.log = "Turning right"
-            else:
-                self.log = ""
+                self.motor_state = 'TURN'
 
             # Send command to brick
             command_string = '{}:{},{}'.format(self.speedCommand, self.motor_left_speed, self.motor_right_speed)
