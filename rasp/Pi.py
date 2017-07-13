@@ -47,10 +47,9 @@ class Pi:
                         ir1_value = int(float(dataparts[4]))
                     elif dataparts[3] == 'IR_2':
                         ir2_value = int(float(dataparts[4]))
+						got_new_data_from_brick = True
                     elif dataparts[3] == 'US_1':
                         us1_value = int(float(dataparts[4]))
-
-                    got_new_data_from_brick = True
 
             elif dataparts[0] == 'PHONE_1':
                 if len(dataparts) == 5:
