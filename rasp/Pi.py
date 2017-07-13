@@ -67,14 +67,16 @@ class Pi:
             self.brick_ir2 = ir2_value
             self.brick_us1 = us1_value
 
-            threshold1 = 25
-            threshold2 = 35
+            ir_threshold1 = 27
+            ir_threshold2 = 35
+            us_threshold1 = 350
+            us_threshold2 = 500
 
-            if ir2_value < threshold1:
+            if ir2_value < ir_threshold1 or us1_value < us_threshold1:
                 self.motor_left_speed = 0
                 self.motor_right_speed = 30
                 self.log = "Turning right"
-            elif ir2_value > threshold2:
+            elif ir2_value > ir_threshold2 or us1_value > us_threshold2:
                 self.motor_left_speed = 30
                 self.motor_right_speed = 30
                 self.log = "Going straight at 30"
