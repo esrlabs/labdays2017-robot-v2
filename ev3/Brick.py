@@ -82,7 +82,7 @@ class Brick:
         line2 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.infrared2Id, value)
 
         time1 = time()
-        value = self.sensors.getData('US')
+        value = self.sensors.getData('US_1')
         time2 = time()
 
         line3 = '{}:{:f}:{:f}:{}:{:f}'.format(self.originatorId, time1, time2, self.ultrasonicId, value)

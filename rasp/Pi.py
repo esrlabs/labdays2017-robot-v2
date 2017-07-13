@@ -38,6 +38,7 @@ class Pi:
         us1_value = 0
 
         for s in sensordata:
+            print(s)
             dataparts = s.split(":")
 
             if dataparts[0] == 'BRICK_1':
@@ -62,7 +63,7 @@ class Pi:
                             self.phone_ypos = qr_data[3]
 
         if got_new_data_from_brick:
-            # Evaluate value of IR_1 and generate command for brick
+            # Evaluate value of IR_2 and generate command for brick
             self.brick_ir1 = ir1_value
             self.brick_ir2 = ir2_value
             self.brick_us1 = us1_value
@@ -70,11 +71,11 @@ class Pi:
             threshold1 = 22
             threshold2 = 35
 
-            if ir1_value < threshold1:
+            if ir2_value < threshold1:
                 self.motor_left_speed = 30
                 self.motor_right_speed = 0
                 self.log = "Turning Left"
-            elif ir1_value > threshold2:
+            elif ir2_value > threshold2:
                 self.motor_left_speed = 30
                 self.motor_right_speed = 30
                 self.log = "Going straight at 30"
