@@ -85,7 +85,7 @@ class Pi:
                 self.motor_right_speed = 30
                 self.log = "Turning right"
             else:
-                self.log = "Doing the same again"
+                self.log = ""
 
             # Send command to brick
             command_string = '{}:{},{}'.format(self.speedCommand, self.motor_left_speed, self.motor_right_speed)
@@ -95,13 +95,21 @@ class Pi:
             self.commserver.send_msg('web/in', self.generate_json())
 
     def generate_json(self):
-        webserver_data = {
-            "points": "{}, {}, {}".format(self.phone_xpos, self.phone_ypos, self.phone_angle),
-            "logs": [self.logs],
-            "status": {"ir1": self.brick_ir1,
-                       "ir2": self.brick_ir2,
-                       "us1": self.brick_us1}
-        }
+        if self.logs == "":
+            webserver_data = {
+                "points": "{}, {}, {}".format(self.phone_xpos, self.phone_ypos, self.phone_angle),
+                "status": {"ir1": self.brick_ir1,
+                           "ir2": self.brick_ir2,
+                           "us1": self.brick_us1}
+            }
+        else:
+            webserver_data = {
+                "points": "{}, {}, {}".format(self.phone_xpos, self.phone_ypos, self.phone_angle),
+                "logs": [self.logs],
+                "status": {"ir1": self.brick_ir1,
+                           "ir2": self.brick_ir2,
+                           "us1": self.brick_us1}
+            }
         return json.dumps(webserver_data)
 
     def run_queue_listener(self):
