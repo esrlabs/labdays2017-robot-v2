@@ -102,7 +102,10 @@ def main():
     sleep(2)
     brick.setSpeed("0,0")
     
-    brick.run_queue_listener()
+    try:
+        brick.run_queue_listener()
+    except e:
+        brick.setSpeed("0,0")
 
 
 if __name__ == '__main__':
