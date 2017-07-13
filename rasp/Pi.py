@@ -78,7 +78,7 @@ class Pi:
                 self.motor_left_speed = 30
                 self.motor_right_speed = 30
                 self.log = "Going straight at 30"
-            elif self.motor_left_speed == 0 && self.motor_right_speed == 0:
+            elif self.motor_left_speed == 0 and self.motor_right_speed == 0:
                 self.motor_left_speed = 0
                 self.motor_right_speed = 30
                 self.log = "Turning right"
