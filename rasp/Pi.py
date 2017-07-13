@@ -105,7 +105,7 @@ class Pi:
         else:
             webserver_data = {
                 "points": "{}, {}, {}".format(self.phone_xpos, self.phone_ypos, self.phone_angle),
-                "logs": [self.logs],
+                "logs": [self.log],
                 "status": {"ir1": self.brick_ir1,
                            "ir2": self.brick_ir2,
                            "us1": self.brick_us1}
